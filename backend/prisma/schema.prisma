@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ──────────────────────────────────────────────
+
+enum UserRole {
+  FARMER
+  BUYER
+}
+
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  DELETED
+}
+
+// ─── Auth Models (Better Auth managed) ──────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  phone         String?
+  image         String?
+  role          UserRole?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  farmerProfile FarmerProfile?
+  buyerProfile  BuyerProfile?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─── Marketplace Models ─────────────────────────────────
+model FarmerProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state         String
+  district      String
+  pincode       String?
+  village       String?
+  cropTypes     String[]
+  profilePhoto  String?
+  rating        Float    @default(0)
+  totalOrders   Int      @default(0)
+  walletBalance Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  listings Listing[]
+
+  @@map("farmer_profile")
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  icon     String?
+  listings Listing[]
+
+  @@map("category")
+}
+
+model Listing {
+  id            String        @id @default(cuid())
+  farmerId      String
+  farmer        FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  cropName      String
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  quantity      Float
+  unit          String
+  pricePerUnit  Float
+  grade         String?
+  harvestDate   DateTime?
+  availableFrom DateTime?
+  photos        String[]
+  description   String?
+  latitude      Float?
+  longitude     Float?
+  locationName  String?
+  status        ListingStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("listing")
+}
+
+model BuyerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addresses Json[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("buyer_profile")
+}

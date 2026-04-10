@@ -1,0 +1,35 @@
+{
+  "name": "farmbridge-server",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch index.ts",
+    "seed:categories": "bun src/modules/category/category.seed.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^8.2.3",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
+    "@types/pg": "^8.20.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@better-auth/expo": "^1.5.6",
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "7",
+    "better-auth": "^1.5.6",
+    "cloudinary": "^2.9.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "pg": "^8.20.0",
+    "prisma": "^7.6.0",
+    "zod": "^4.3.6"
+  }
+}
