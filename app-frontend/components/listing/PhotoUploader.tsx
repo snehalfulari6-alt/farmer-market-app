@@ -66,13 +66,6 @@ export default function PhotoUploader({ value, onChange, maxCount = 5 }: Props) 
 
   return (
     <View>
-      <Pressable style={styles.uploadBtn} onPress={onPick} disabled={uploading}>
-        <Ionicons name="images-outline" size={18} color={Colors.primary} />
-        <Text style={styles.uploadText}>
-          {uploading ? "Uploading..." : `Upload Photos (${value.length}/${maxCount})`}
-        </Text>
-      </Pressable>
-
       <View style={styles.grid}>
         {value.map((url, index) => (
           <View key={`${url}-${index}`} style={styles.thumbWrap}>
@@ -82,41 +75,48 @@ export default function PhotoUploader({ value, onChange, maxCount = 5 }: Props) 
             </Pressable>
           </View>
         ))}
+
+        {Array.from({ length: Math.max(0, Math.min(3, maxCount - value.length)) }).map((_, i) => (
+          <Pressable
+            key={`empty-${i}`}
+            style={[styles.emptySlot, uploading && { opacity: 0.6 }]}
+            onPress={onPick}
+            disabled={uploading}
+          >
+            <Ionicons name={uploading && i === 0 ? "time-outline" : "add"} size={20} color={Colors.textMuted} />
+          </Pressable>
+        ))}
       </View>
+
+      <Text style={styles.hint}>{uploading ? "Uploading photo..." : `Photos ${value.length}/${maxCount}`}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  uploadBtn: {
-    minHeight: 46,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 12,
-    backgroundColor: Colors.primarySurface,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    gap: 8,
-  },
-  uploadText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: Colors.primary,
-  },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 10,
   },
   thumbWrap: {
-    width: 78,
-    height: 78,
+    width: 92,
+    height: 92,
     borderRadius: 10,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  emptySlot: {
+    width: 92,
+    height: 92,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderStyle: "dashed",
+    backgroundColor: Colors.surfaceAlt,
+    alignItems: "center",
+    justifyContent: "center",
   },
   thumb: {
     width: "100%",
@@ -132,5 +132,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  hint: {
+    marginTop: 6,
+    fontSize: 12,
+    color: Colors.textMuted,
   },
 });

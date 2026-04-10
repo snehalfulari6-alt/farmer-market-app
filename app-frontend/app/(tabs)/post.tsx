@@ -7,15 +7,20 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Dropdown } from "react-native-element-dropdown";
 import { router } from "expo-router";
 import { Toast } from "react-native-toast-message-ts";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/constants/colors";
-import ChipSelect from "@/components/common/ChipSelect";
 import PhotoUploader from "@/components/listing/PhotoUploader";
-import { createListing, getCategories, type Category } from "@/services/listing";
 import AuthButton from "@/components/auth/AuthButton";
+import {
+  createListing,
+  getCategories,
+  type Category,
+} from "@/services/listing";
 
 const UNIT_OPTIONS = ["kg", "quintal", "ton"];
 const GRADE_OPTIONS = ["A", "B", "C"];
@@ -32,9 +37,22 @@ export default function PostScreen() {
   const [harvestDate, setHarvestDate] = useState("");
   const [availableFrom, setAvailableFrom] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
-  const [locationName, setLocationName] = useState("");
-  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (err) {
+        Toast.show({
+          type: "error",
+          text1: "Category Error",
+          text2: (err as Error).message,
+        });
+      }
+    })();
+  }, []);
 
   const resetForm = () => {
     setCropName("");
@@ -46,20 +64,7 @@ export default function PostScreen() {
     setHarvestDate("");
     setAvailableFrom("");
     setPhotos([]);
-    setLocationName("");
-    setDescription("");
   };
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await getCategories();
-        setCategories(data);
-      } catch (err) {
-        Toast.show({ type: "error", text1: "Category Error", text2: (err as Error).message });
-      }
-    })();
-  }, []);
 
   const canSubmit = useMemo(() => {
     return (
@@ -72,8 +77,15 @@ export default function PostScreen() {
     );
   }, [cropName, quantity, pricePerUnit, loading]);
 
+  const categoryOptions = categories.map((c) => ({
+    label: c.name,
+    value: c.id,
+  }));
+  const unitOptions = UNIT_OPTIONS.map((u) => ({ label: u, value: u }));
+
   const onSubmit = async () => {
     Keyboard.dismiss();
+
     if (!canSubmit) {
       Toast.show({
         type: "warning",
@@ -92,11 +104,13 @@ export default function PostScreen() {
         unit,
         pricePerUnit: Number(pricePerUnit),
         grade: grade || undefined,
-        harvestDate: harvestDate ? new Date(harvestDate).toISOString() : undefined,
-        availableFrom: availableFrom ? new Date(availableFrom).toISOString() : undefined,
+        harvestDate: harvestDate
+          ? new Date(harvestDate).toISOString()
+          : undefined,
+        availableFrom: availableFrom
+          ? new Date(availableFrom).toISOString()
+          : undefined,
         photos,
-        locationName: locationName.trim() || undefined,
-        description: description.trim() || undefined,
       });
 
       Toast.show({
@@ -104,6 +118,7 @@ export default function PostScreen() {
         text1: "Listing Posted",
         text2: "Your produce listing is now live",
       });
+
       resetForm();
       router.replace("/(tabs)/listings");
     } catch (err) {
@@ -118,129 +133,158 @@ export default function PostScreen() {
   };
 
   return (
-    <KeyboardAwareScrollView
-      style={styles.container}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 12 }]}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      bottomOffset={24}
-    >
-      <Text style={styles.title}>Post Produce</Text>
-      <Text style={styles.subtitle}>Create a new listing for buyers</Text>
+    <View style={styles.container}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View>
+          <Text style={styles.headerTitle}>Post Your Produce</Text>
+          <Text style={styles.headerSubtitle}>
+            Share your fresh stock with FarmBridge buyers
+          </Text>
+        </View>
+      </View>
 
-      <Field label="Crop Name *">
-        <TextInput
-          value={cropName}
-          onChangeText={setCropName}
-          placeholder="e.g. Wheat"
-          style={styles.input}
-          placeholderTextColor={Colors.textMuted}
-        />
-      </Field>
+      <KeyboardAwareScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bottomOffset={24}
+      >
+        <View style={styles.formCard}>
+          <Field label="UPLOAD PHOTOS (up to 5)">
+            <PhotoUploader value={photos} onChange={setPhotos} maxCount={5} />
+          </Field>
 
-      <Field label="Category">
-        <ChipSelect
-          options={categories.map((c) => ({ label: c.name, value: c.id }))}
-          selected={categoryId ? [categoryId] : []}
-          multiple={false}
-          onChange={(vals) => setCategoryId(vals[0])}
-        />
-      </Field>
+          <Field label="Crop Name">
+            <TextInput
+              value={cropName}
+              onChangeText={setCropName}
+              placeholder="Search or Select Crop"
+              style={styles.input}
+              placeholderTextColor={Colors.textMuted}
+            />
+          </Field>
 
-      <Field label="Quantity *">
-        <TextInput
-          value={quantity}
-          onChangeText={(t) => setQuantity(t.replace(/[^0-9.]/g, ""))}
-          placeholder="e.g. 20"
-          keyboardType="decimal-pad"
-          style={styles.input}
-          placeholderTextColor={Colors.textMuted}
-        />
-      </Field>
+          <Field label="Category">
+            <Dropdown
+              style={styles.dropdown}
+              containerStyle={styles.dropdownContainer}
+              placeholderStyle={styles.placeholderText}
+              selectedTextStyle={styles.selectedText}
+              itemTextStyle={styles.dropdownItemText}
+              data={categoryOptions}
+              labelField="label"
+              valueField="value"
+              placeholder="Select Category"
+              value={categoryId}
+              onChange={(item) => setCategoryId(item.value)}
+            />
+          </Field>
 
-      <Field label="Unit">
-        <ChipSelect
-          options={UNIT_OPTIONS.map((u) => ({ label: u, value: u }))}
-          selected={[unit]}
-          multiple={false}
-          onChange={(vals) => setUnit(vals[0] ?? "kg")}
-        />
-      </Field>
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>Quantity</Text>
+              <TextInput
+                value={quantity}
+                onChangeText={(t) => setQuantity(t.replace(/[^0-9.]/g, ""))}
+                placeholder="e.g. 500"
+                keyboardType="decimal-pad"
+                style={styles.input}
+                placeholderTextColor={Colors.textMuted}
+              />
+            </View>
+            <View style={styles.col}>
+              <Text style={styles.label}>Unit</Text>
+              <Dropdown
+                style={styles.dropdown}
+                containerStyle={styles.dropdownContainer}
+                placeholderStyle={styles.placeholderText}
+                selectedTextStyle={styles.selectedText}
+                itemTextStyle={styles.dropdownItemText}
+                data={unitOptions}
+                labelField="label"
+                valueField="value"
+                placeholder="kg"
+                value={unit}
+                onChange={(item) => setUnit(item.value)}
+              />
+            </View>
+          </View>
 
-      <Field label="Price Per Unit (Rs) *">
-        <TextInput
-          value={pricePerUnit}
-          onChangeText={(t) => setPricePerUnit(t.replace(/[^0-9.]/g, ""))}
-          placeholder="e.g. 2500"
-          keyboardType="decimal-pad"
-          style={styles.input}
-          placeholderTextColor={Colors.textMuted}
-        />
-      </Field>
+          <Field label="Price per Unit (Rs)">
+            <TextInput
+              value={pricePerUnit}
+              onChangeText={(t) => setPricePerUnit(t.replace(/[^0-9.]/g, ""))}
+              placeholder="Enter price"
+              keyboardType="decimal-pad"
+              style={styles.input}
+              placeholderTextColor={Colors.textMuted}
+            />
+          </Field>
 
-      <Field label="Quality Grade">
-        <ChipSelect
-          options={GRADE_OPTIONS.map((g) => ({ label: g, value: g }))}
-          selected={grade ? [grade] : []}
-          multiple={false}
-          onChange={(vals) => setGrade(vals[0] ?? "")}
-        />
-      </Field>
+          <Field label="Quality Grade">
+            <View style={styles.gradeRow}>
+              {GRADE_OPTIONS.map((g) => {
+                const active = grade === g;
+                return (
+                  <Pressable
+                    key={g}
+                    style={[styles.gradeBtn, active && styles.gradeBtnActive]}
+                    onPress={() => setGrade(g)}
+                  >
+                    <Text
+                      style={[
+                        styles.gradeText,
+                        active && styles.gradeTextActive,
+                      ]}
+                    >
+                      Grade {g}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Field>
 
-      <Field label="Harvest Date (YYYY-MM-DD)">
-        <TextInput
-          value={harvestDate}
-          onChangeText={setHarvestDate}
-          placeholder="2026-04-10"
-          style={styles.input}
-          placeholderTextColor={Colors.textMuted}
-        />
-      </Field>
+          <Field label="Harvest Date">
+            <TextInput
+              value={harvestDate}
+              onChangeText={setHarvestDate}
+              placeholder="DD / MM / YYYY"
+              style={styles.input}
+              placeholderTextColor={Colors.textMuted}
+            />
+          </Field>
 
-      <Field label="Available From (YYYY-MM-DD)">
-        <TextInput
-          value={availableFrom}
-          onChangeText={setAvailableFrom}
-          placeholder="2026-04-12"
-          style={styles.input}
-          placeholderTextColor={Colors.textMuted}
-        />
-      </Field>
+          <Field label="Available From Date">
+            <TextInput
+              value={availableFrom}
+              onChangeText={setAvailableFrom}
+              placeholder="DD / MM / YYYY"
+              style={styles.input}
+              placeholderTextColor={Colors.textMuted}
+            />
+          </Field>
 
-      <Field label="Photos (up to 5)">
-        <PhotoUploader value={photos} onChange={setPhotos} maxCount={5} />
-      </Field>
-
-      <Field label="Location">
-        <TextInput
-          value={locationName}
-          onChangeText={setLocationName}
-          placeholder="Village, district"
-          style={styles.input}
-          placeholderTextColor={Colors.textMuted}
-        />
-      </Field>
-
-      <Field label="Description">
-        <TextInput
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Add listing details"
-          style={[styles.input, styles.textArea]}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-          placeholderTextColor={Colors.textMuted}
-        />
-      </Field>
-
-      <AuthButton label="Post Listing" loading={loading} onPress={onSubmit} />
-      <Pressable style={styles.bottomSpace} />
-    </KeyboardAwareScrollView>
+          <AuthButton
+            label="Post Listing"
+            loading={loading}
+            onPress={onSubmit}
+          />
+          <View style={{ height: 16 }} />
+        </View>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -254,27 +298,64 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  content: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+  header: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 18,
+    paddingBottom: 22,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
   },
-  title: {
-    fontSize: 28,
+  headerBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    fontSize: 23,
     fontWeight: "800",
-    color: Colors.textPrimary,
+    color: Colors.textOnPrimary,
   },
-  subtitle: {
-    marginTop: 6,
-    marginBottom: 14,
+  headerSubtitle: {
+    marginTop: 4,
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.85)",
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingTop: 10,
+    paddingBottom: 24,
+  },
+  formCard: {
+    marginHorizontal: 14,
+    backgroundColor: Colors.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   field: {
-    marginBottom: 12,
+    marginBottom: 11,
+  },
+  row: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 11,
+  },
+  col: {
+    flex: 1,
   },
   label: {
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "600",
     color: Colors.textSecondary,
     marginBottom: 6,
   },
@@ -287,11 +368,55 @@ const styles = StyleSheet.create({
     minHeight: 46,
     color: Colors.textPrimary,
   },
-  textArea: {
-    minHeight: 94,
-    paddingTop: 10,
+  dropdown: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    minHeight: 46,
+    paddingHorizontal: 12,
   },
-  bottomSpace: {
-    height: 16,
+  dropdownContainer: {
+    borderRadius: 12,
+    borderColor: Colors.border,
+    overflow: "hidden",
+  },
+  dropdownItemText: {
+    color: Colors.textPrimary,
+    fontSize: 14,
+  },
+  placeholderText: {
+    color: Colors.textMuted,
+    fontSize: 15,
+  },
+  selectedText: {
+    color: Colors.textPrimary,
+    fontSize: 15,
+  },
+  gradeRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  gradeBtn: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  gradeBtnActive: {
+    backgroundColor: "#BDBDBD",
+    borderColor: "#BDBDBD",
+  },
+  gradeText: {
+    fontSize: 14,
+    color: Colors.textMuted,
+    fontWeight: "700",
+  },
+  gradeTextActive: {
+    color: Colors.surface,
   },
 });

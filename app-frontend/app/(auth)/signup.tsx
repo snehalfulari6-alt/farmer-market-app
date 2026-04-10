@@ -110,7 +110,10 @@ const SignUpScreen = () => {
 
   return (
     <AuthScreenWrapper>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primaryDark} />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={Colors.primaryDark}
+      />
 
       {/* Green Header */}
       <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
@@ -198,7 +201,7 @@ const SignUpScreen = () => {
           </Link>
         </View>
 
-        <View style={styles.dividerContainer}>
+        {/* <View style={styles.dividerContainer}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>or</Text>
           <View style={styles.dividerLine} />
@@ -207,7 +210,7 @@ const SignUpScreen = () => {
         <Pressable style={styles.googleButton} onPress={onGooglePress}>
           <Text style={styles.googleIcon}>G</Text>
           <Text style={styles.googleButtonText}>Sign up with Google</Text>
-        </Pressable>
+        </Pressable> */}
       </View>
     </AuthScreenWrapper>
   );

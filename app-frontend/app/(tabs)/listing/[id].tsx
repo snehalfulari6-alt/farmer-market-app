@@ -118,7 +118,7 @@ export default function ListingDetailScreen() {
           style={[styles.secondaryBtn, updating && { opacity: 0.7 }]}
           disabled={updating}
           onPress={() =>
-            Toast.show({ type: "info", text1: "Coming Soon", text2: "Edit form in next iteration" })
+            router.push({ pathname: "/(tabs)/listing/edit/[id]", params: { id } } as any)
           }
         >
           <Text style={styles.secondaryText}>Edit</Text>

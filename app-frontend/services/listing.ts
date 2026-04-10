@@ -59,7 +59,7 @@ export async function uploadListingPhoto(fileUri: string) {
   return result.url;
 }
 
-export async function getMyListings(status?: Exclude<ListingStatus, "DELETED">) {
+export async function getMyListings(status?: ListingStatus) {
   const query = status ? `?status=${status}` : "";
   const res = await apiRequest<{ success: boolean; listings: Listing[] }>(
     `/api/v1/listings${query}`,

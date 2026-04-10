@@ -136,16 +136,16 @@ const SignInScreen = () => {
           </Link>
         </View>
 
-        <View style={styles.dividerContainer}>
+        {/* <View style={styles.dividerContainer}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>or</Text>
           <View style={styles.dividerLine} />
-        </View>
+        </View> */}
 
-        <Pressable style={styles.googleButton} onPress={onGooglePress}>
+        {/* <Pressable style={styles.googleButton} onPress={onGooglePress}>
           <Text style={styles.googleIcon}>G</Text>
           <Text style={styles.googleButtonText}>Sign in with Google</Text>
-        </Pressable>
+        </Pressable> */}
       </View>
     </AuthScreenWrapper>
   );

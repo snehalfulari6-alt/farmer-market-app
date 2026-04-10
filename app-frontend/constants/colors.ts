@@ -43,6 +43,15 @@ export const Colors = {
   statusDispatched: "#FF9800",
   statusDelivered: "#4CAF50",
   statusCancelled: "#D32F2F",
+
+  // 
+  active: "#2E7D32",
+  sold: "#D32F2F",
+  inactive: "#D32F2F",
+
+  // Edit and Delete
+  edit: "#2E7D32",
+  delete: "#D32F2F",
 } as const;
 
 export const Spacing = {
