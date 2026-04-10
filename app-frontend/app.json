@@ -46,7 +46,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "https://nonregressively-hyperdicrotic-arya.ngrok-free.dev"
+      "apiUrl": "http://10.11.235.236:3000"
     }
   }
 }

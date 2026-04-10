@@ -25,9 +25,14 @@ export type ListingStatus = "ACTIVE" | "SOLD" | "DELETED";
 export type Listing = {
   id: string;
   cropName: string;
+  categoryId?: string | null;
   quantity: number;
   unit: string;
   pricePerUnit: number;
+  grade?: string | null;
+  harvestDate?: string | null;
+  availableFrom?: string | null;
+  description?: string | null;
   status: ListingStatus;
   photos: string[];
   locationName?: string | null;
@@ -79,6 +84,14 @@ export async function updateListingStatus(id: string, status: "ACTIVE" | "SOLD" 
   const res = await apiRequest<{ success: boolean; listing: Listing }>(`/api/v1/listings/${id}`, {
     method: "PATCH",
     body: { status },
+  });
+  return res.listing;
+}
+
+export async function updateListing(id: string, payload: Partial<CreateListingPayload>) {
+  const res = await apiRequest<{ success: boolean; listing: Listing }>(`/api/v1/listings/${id}`, {
+    method: "PATCH",
+    body: payload,
   });
   return res.listing;
 }

@@ -72,6 +72,7 @@ const TabsLayout = () => {
       />
 
       <Tabs.Screen name="listing/[id]" options={{ href: null }} />
+      <Tabs.Screen name="listing/edit/[id]" options={{ href: null }} />
 
       <Tabs.Screen name="profile" options={{ href: null }} />
     </Tabs>
