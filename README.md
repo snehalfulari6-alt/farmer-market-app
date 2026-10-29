@@ -1,135 +1,84 @@
-## 🚀 Installation & Setup
+# Farmer Market App
+
+A React Native mobile app that gives farmers direct market access, so they can reach buyers without middlemen. It has an Expo mobile frontend and a Bun backend with authentication, a PostgreSQL database and image uploads.
+
+## Features
+
+<!-- TODO: replace with your real feature list -->
+- Sign in with Google or email (Better Auth)
+- Farmer product listings with image uploads (Cloudinary)
+- _Add your other features here (browse/search products, orders, profiles, etc.)_
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Mobile app | React Native, Expo (Expo Go for testing), TypeScript |
+| Backend | Bun, TypeScript |
+| Database | PostgreSQL |
+| Authentication | Better Auth, Google OAuth |
+| Image storage | Cloudinary |
+
+## Project structure
+
+```
+farmer-market-app/
+├── app-frontend/   # Expo / React Native app
+└── backend/        # Bun API server
+```
+
+## Installation & setup
 
 ### Prerequisites
 
-Before running the application, ensure the following software is installed on your system:
+- [Node.js](https://nodejs.org/)
+- [Bun](https://bun.sh/)
+- [Expo Go](https://expo.dev/go) on your phone
+- PostgreSQL
 
-* Node.js
-* Bun
-* Expo Go (for mobile testing)
-* PostgreSQL Database
-
-### Clone the Repository
+### Clone the repository
 
 ```bash
 git clone https://github.com/snehalfulari6-alt/farmer-market-app.git
 cd farmer-market-app
 ```
 
----
+### Environment configuration
 
-## ⚙️ Environment Configuration
+The phone talks to the backend over your local network, so the IP address must match your current Wi-Fi network. Find your machine's local IP (`ipconfig` on Windows, `ifconfig` / `ip a` on macOS/Linux) and update the following.
 
-This project uses local network communication between the mobile application and backend server. Therefore, you must update the IP address configuration based on your current Wi-Fi network before running the application.
+1. **Frontend API URL**: in `app-frontend/app.json`, set
+   ```json
+   "apiUrl": "http://YOUR_LOCAL_IP:3000"
+   ```
+2. **Auth client**: in `app-frontend/lib/auth-client.ts`, replace the base URL with
+   ```
+   http://YOUR_LOCAL_IP:3000
+   ```
+3. **Expo trusted origin**: in `backend/src/lib/auth.ts`, replace the Expo origin with
+   ```
+   exp://YOUR_LOCAL_IP:8081
+   ```
+4. **Environment variables**: create `backend/.env`:
+   ```env
+   DATABASE_URL=
+   BETTER_AUTH_SECRET=
+   BETTER_AUTH_URL=http://localhost:3000
 
-### 1. Update Frontend API URL
+   GOOGLE_CLIENT_ID=
+   GOOGLE_CLIENT_SECRET=
 
-Open:
+   CLOUDINARY_CLOUD_NAME=
+   CLOUDINARY_API_KEY=
+   CLOUDINARY_API_SECRET=
+   ```
+   Keep `BETTER_AUTH_URL=http://localhost:3000` for local development unless you intentionally expose the backend to other networks.
 
-```text
-app-frontend/app.json
-```
+> Repeat the IP changes whenever you switch machines or Wi-Fi networks, otherwise the app cannot reach the backend.
 
-Replace:
+## Running the app
 
-```json
-"apiUrl": "http://10.11.235.236:3000"
-```
-
-with your machine's local IP address:
-
-```json
-"apiUrl": "http://YOUR_LOCAL_IP:3000"
-```
-
-Example:
-
-```json
-"apiUrl": "http://192.168.1.50:3000"
-```
-
----
-
-### 2. Update Frontend Authentication Client
-
-Open:
-
-```text
-app-frontend/lib/auth-client.ts
-```
-
-Replace:
-
-```text
-http://10.11.235.236:3000
-```
-
-with:
-
-```text
-http://YOUR_LOCAL_IP:3000
-```
-
----
-
-### 3. Update Expo Trusted Origin
-
-Open:
-
-```text
-backend/src/lib/auth.ts
-```
-
-Replace:
-
-```text
-exp://10.11.235.236:8081
-```
-
-with your current Expo host address:
-
-```text
-exp://YOUR_LOCAL_IP:8081
-```
-
-Example:
-
-```text
-exp://192.168.1.50:8081
-```
-
----
-
-### 4. Configure Environment Variables
-
-Create or update the `.env` file located in:
-
-```text
-backend/.env
-```
-
-Ensure the following variables contain valid values:
-
-```env
-DATABASE_URL=
-BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=http://localhost:3000
-
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-```
-
-> **Note:** Keep `BETTER_AUTH_URL=http://localhost:3000` for local development unless the backend is intentionally exposed to external networks.
-
----
-
-## ▶️ Running the Application
-
-### Start the Backend Server
+**Backend**
 
 ```bash
 cd backend
@@ -137,7 +86,7 @@ bun install
 bun run dev
 ```
 
-### Start the Mobile Application
+**Mobile app**
 
 ```bash
 cd app-frontend
@@ -145,10 +94,24 @@ npm install
 npx expo start
 ```
 
-Scan the generated QR code using the Expo Go application on a mobile device connected to the same Wi-Fi network.
+Scan the QR code with Expo Go on a phone connected to the same Wi-Fi network.
 
----
+## API endpoints
 
-## 📌 Important Note
+Base URL: `http://YOUR_LOCAL_IP:3000`
 
-Whenever the project is executed on a different machine or network, the local IP address configuration must be updated in the files mentioned above. Failure to update these values may prevent communication between the mobile application and backend server.
+<!-- TODO: fill in from your backend routes. Replace the examples below. -->
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `*` | `/api/auth/*` | Authentication (sign-in, sign-up, session, Google OAuth), handled by Better Auth |
+| GET | `/api/...` | _Describe_ |
+| POST | `/api/...` | _Describe_ |
+
+## Contributing / commit style
+
+Commits follow a short `type: message` format, for example `feat: add product listing screen`, `fix: correct API URL in auth client` or `docs: update README`.
+
+## Author
+
+Snehal Fulari
